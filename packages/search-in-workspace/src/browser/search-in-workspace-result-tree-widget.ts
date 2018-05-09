@@ -247,7 +247,8 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
 
     protected renderReplaceButton(node: TreeNode): h.Child {
         return h.span({
-            className: "replace-result", onclick: async e => {
+            className: "replace-result",
+            onclick: async e => {
                 this.replaceResult(node);
                 this.removeNode(node);
                 e.stopPropagation();
@@ -322,18 +323,6 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
                 const index = result.children.findIndex(n => n.file === node.file && n.line === node.line && n.character === node.character);
                 if (index > -1) {
                     result.children.splice(index, 1);
-                    if (result.children.length === index) {
-                        const keyArr = Array.from(this.resultTree.keys());
-                        const currentResultIndex = keyArr.findIndex(k => result.file === k);
-                        if (currentResultIndex + 1 <= keyArr.length) {
-                            const newNode = this.resultTree.get(keyArr[currentResultIndex + 1]);
-                            if (newNode) {
-                                this.model.selectNode(newNode);
-                            }
-                        }
-                    } else {
-                        this.model.selectNode(result.children[index]);
-                    }
                     if (result.children.length === 0) {
                         this.resultTree.delete(result.file);
                     }

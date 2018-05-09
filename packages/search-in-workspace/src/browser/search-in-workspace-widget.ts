@@ -116,6 +116,8 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
         this.searchTerm = oldState.searchTerm;
         this.replaceTerm = oldState.replaceTerm;
         this.showReplaceField = oldState.showReplaceField;
+        this.resultTreeWidget.replaceTerm = this.replaceTerm;
+        this.resultTreeWidget.showReplaceButtons = this.showReplaceField;
         this.refresh();
     }
 
@@ -128,12 +130,6 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
     onUpdateRequest(msg: Message) {
         super.onUpdateRequest(msg);
         VirtualRenderer.render(this.renderSearchHeader(), this.searchFormContainer);
-        // we have to be sure that the value attribute is set programmatically. At least for clearing the search field.
-        // Since setAttribute doesn't work for the value (as phosphor renderer does) we have to do it directly in DOM.
-        const f = document.getElementById("search-input-field");
-        if (f) {
-            (f as HTMLInputElement).value = this.searchTerm;
-        }
     }
 
     onAfterShow(msg: Message) {
@@ -162,6 +158,23 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
 
     protected clear = () => {
         this.searchTerm = "";
+        this.replaceTerm = "";
+        this.searchInWorkspaceOptions.include = "";
+        this.searchInWorkspaceOptions.exclude = "";
+        this.includeIgnoredState.enabled = false;
+        this.matchCaseState.enabled = false;
+        this.wholeWordState.enabled = false;
+        this.regExpState.enabled = false;
+        const search = document.getElementById("search-input-field");
+        const replace = document.getElementById("replace-input-field");
+        const include = document.getElementById("include-glob-field");
+        const exclude = document.getElementById("exclude-glob-field");
+        if (search && replace && include && exclude) {
+            (search as HTMLInputElement).value = "";
+            (replace as HTMLInputElement).value = "";
+            (include as HTMLInputElement).value = "";
+            (exclude as HTMLInputElement).value = "";
+        }
         this.resultTreeWidget.search(this.searchTerm, this.searchInWorkspaceOptions);
         this.update();
     }
@@ -189,7 +202,12 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
         const toggle = h.span({ className: `fa fa-caret-${this.showReplaceField ? "down" : "right"}` });
         return h.div({
             className: "replace-toggle",
-            onclick: () => {
+            tabindex: "0",
+            onclick: e => {
+                const elArr = document.getElementsByClassName("replace-toggle");
+                if (elArr && elArr.length > 0) {
+                    (elArr[0] as HTMLElement).focus();
+                }
                 this.showReplaceField = !this.showReplaceField;
                 this.resultTreeWidget.showReplaceButtons = this.showReplaceField;
                 this.update();
@@ -203,19 +221,28 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
             type: "text",
             placeholder: "Search",
             value: this.searchTerm,
+            onfocus: e => {
+                const elArr = document.getElementsByClassName("search-field-container");
+                if (elArr && elArr.length > 0) {
+                    (elArr[0] as HTMLElement).className = "search-field-container focussed";
+                }
+            },
+            onblur: e => {
+                const elArr = document.getElementsByClassName("search-field-container");
+                if (elArr && elArr.length > 0) {
+                    (elArr[0] as HTMLElement).className = "search-field-container";
+                }
+            },
             onkeyup: e => {
                 if (e.target) {
-                    if (Key.ENTER.keyCode === e.keyCode) {
-                        this.resultTreeWidget.search((e.target as HTMLInputElement).value, (this.searchInWorkspaceOptions || {}));
-                        this.update();
-                    } else {
-                        this.searchTerm = (e.target as HTMLInputElement).value;
-                    }
+                    this.searchTerm = (e.target as HTMLInputElement).value;
+                    this.resultTreeWidget.search(this.searchTerm, (this.searchInWorkspaceOptions || {}));
+                    this.update();
                 }
             }
         });
         const optionContainer = this.renderOptionContainer();
-        return h.div({ className: "search-field" }, input, optionContainer);
+        return h.div({ className: "search-field-container" }, h.div({ className: "search-field" }, input, optionContainer));
     }
 
     protected renderReplaceField(): h.Child {
@@ -309,6 +336,7 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
         const input = h.input({
             type: "text",
             value: this.searchInWorkspaceOptions[kind],
+            id: kind + "-glob-field",
             onkeyup: e => {
                 if (e.target) {
                     if (Key.ENTER.keyCode === e.keyCode) {

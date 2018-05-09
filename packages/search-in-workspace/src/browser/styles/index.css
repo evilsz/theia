@@ -6,7 +6,6 @@
  */
 
  :root {
-
   --theia-search-match-color0: rgba(234, 92, 0, 0.33);
   --theia-search-match-color1: rgba(234, 92, 0, 0.5);
   --theia-match-replace-color: rgba(155, 185, 85, 0.2);
@@ -29,14 +28,15 @@
     line-height: var(--theia-content-line-height);
     font-size: var(--theia-ui-font-size1);
     padding-left: 8px;
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--theia-border-color1);
     color: var(--theia-ui-font-color1);
 }
 
 .t-siw-search-container input[type="text"]:focus {
     outline: none;
+}
+
+.t-siw-search-container #search-input-field:focus {
+    border-color: var(--theia-layout-color2);
 }
 
 .t-siw-search-container .searchHeader {
@@ -59,6 +59,13 @@
 
 .t-siw-search-container .searchHeader .controls .clear {
     background: var(--theia-icon-clear);
+}
+
+.t-siw-search-container .searchHeader .search-field-container.focussed {
+    border-style: solid;
+    border-width: var(--theia-border-width);
+    border-color: var(--theia-accent-color3);
+    margin: -1px;
 }
 
 .t-siw-search-container .searchHeader .search-field {
@@ -96,11 +103,6 @@
     display: flex;
     align-items:  center;
     background-color: var(--theia-layout-color2);
-}
-
-.t-siw-search-container .searchHeader .search-field:focus {
-    outline: none;
-    border: var(--theia-border-width) var(--theia-accent-color3) solid;
 }
 
 .t-siw-search-container .searchHeader .button-container {
@@ -266,7 +268,7 @@
     padding: 0 5px;
     text-align: center;
     font-size: calc(var(--theia-ui-font-size0) * 0.8);
-    color: var(--theia-ui-icon-font-color);
+    color: var(--theia-inverse-ui-font-color0);
     font-weight: 400;
     min-width: 7px;
     height: 16px;
@@ -297,6 +299,7 @@
     width: 15px;
     justify-content: center;
     margin-right: 2px;
+    box-sizing: border-box;
 }
 
 .replace-toggle:hover {
