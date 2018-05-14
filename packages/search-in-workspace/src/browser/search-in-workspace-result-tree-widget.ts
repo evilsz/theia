@@ -145,12 +145,12 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
         this.cancelIndicator = new CancellationTokenSource();
         const token = this.cancelIndicator.token;
         const searchId = await this.searchService.search(searchTerm, {
-            onResult: async (searchId: number, result: SearchInWorkspaceResult) => {
-                if (token.isCancellationRequested) {
+            onResult: async (aSearchId: number, result: SearchInWorkspaceResult) => {
+                if (token.isCancellationRequested || aSearchId !== searchId) {
                     return;
                 }
                 const { name, path } = this.filenameAndPath(result.file);
-                const resultElement = this.resultTree.get(result.file);
+                let resultElement = this.resultTree.get(result.file);
 
                 if (resultElement) {
                     const resultLine = this.createResultLineNode(result, resultElement);
@@ -159,7 +159,7 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
                     const children: SearchInWorkspaceResultLineNode[] = [];
                     const icon = await this.labelProvider.getIcon(new URI(result.file));
                     if (CompositeTreeNode.is(this.model.root)) {
-                        const resultElement: SearchInWorkspaceResultNode = {
+                        resultElement = {
                             selected: false,
                             name,
                             path,
@@ -182,7 +182,9 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
                 this.refreshModelChildren();
             }
         }, searchOptions);
-        token.onCancellationRequested(() => this.searchService.cancel(searchId));
+        token.onCancellationRequested(() => {
+            this.searchService.cancel(searchId);
+        });
     }
 
     protected refreshModelChildren() {
@@ -346,9 +348,10 @@ export class SearchInWorkspaceResultTreeWidget extends TreeWidget {
     }
 
     protected renderResultLineNode(node: SearchInWorkspaceResultLineNode): h.Child {
-        const start = h.span(node.lineText.substr(0, node.character - 1));
+        const prefix = node.character > 26 ? '... ' : '';
+        const start = h.span(prefix + node.lineText.substr(0, node.character - 1).substr(-25));
         const match = this.renderMatchLinePart(node);
-        const end = h.span(node.lineText.substr(node.character - 1 + node.length));
+        const end = h.span(node.lineText.substr(node.character - 1 + node.length, 75));
         return h.div(
             {
                 className: `resultLine noWrapInfo ${node.selected ? 'selected' : ''}`,

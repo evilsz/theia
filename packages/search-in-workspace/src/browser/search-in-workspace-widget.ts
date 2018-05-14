@@ -81,8 +81,8 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
             matchWholeWord: false,
             useRegExp: false,
             includeIgnored: false,
-            include: "",
-            exclude: "",
+            include: [],
+            exclude: [],
             maxResults: 500
         };
         this.resultTreeWidget.onChange(r => {
@@ -159,8 +159,8 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
     protected clear = () => {
         this.searchTerm = "";
         this.replaceTerm = "";
-        this.searchInWorkspaceOptions.include = "";
-        this.searchInWorkspaceOptions.exclude = "";
+        this.searchInWorkspaceOptions.include = [];
+        this.searchInWorkspaceOptions.exclude = [];
         this.includeIgnoredState.enabled = false;
         this.matchCaseState.enabled = false;
         this.wholeWordState.enabled = false;
@@ -333,20 +333,25 @@ export class SearchInWorkspaceWidget extends BaseWidget implements StatefulWidge
 
     protected renderGlobField(kind: "include" | "exclude"): h.Child {
         const label = h.div({ className: "label" }, "files to " + kind);
+        const currentValue = this.searchInWorkspaceOptions[kind];
         const input = h.input({
             type: "text",
-            value: this.searchInWorkspaceOptions[kind],
+            value: currentValue && currentValue.join(', ') || '',
             id: kind + "-glob-field",
             onkeyup: e => {
                 if (e.target) {
                     if (Key.ENTER.keyCode === e.keyCode) {
                         this.resultTreeWidget.search(this.searchTerm, this.searchInWorkspaceOptions);
                     } else {
-                        this.searchInWorkspaceOptions[kind] = (e.target as HTMLInputElement).value;
+                        this.searchInWorkspaceOptions[kind] = this.splitOnComma((e.target as HTMLInputElement).value);
                     }
                 }
             }
         });
         return h.div({ className: "glob-field" }, label, input);
+    }
+
+    protected splitOnComma(patterns: string): string[] {
+        return patterns.split(',').map(s => s.trim());
     }
 }

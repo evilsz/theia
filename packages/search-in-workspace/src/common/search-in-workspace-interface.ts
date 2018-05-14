@@ -31,11 +31,11 @@ export interface SearchInWorkspaceOptions {
     /**
      * Glob pattern for matching files and directories to include the search.
      */
-    include?: string;
+    include?: string[];
     /**
      * Glob pattern for matching files and directories to exclude the search.
      */
-    exclude?: string
+    exclude?: string[]
 }
 
 export interface SearchInWorkspaceResult {
