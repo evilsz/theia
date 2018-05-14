@@ -9,7 +9,6 @@ import { ContainerModule, interfaces } from "inversify";
 import { SearchInWorkspaceService, SearchInWorkspaceClientImpl } from './search-in-workspace-service';
 import { SearchInWorkspaceServer } from '../common/search-in-workspace-interface';
 import { WebSocketConnectionProvider, KeybindingContribution, WidgetFactory, createTreeContainer, TreeWidget } from '@theia/core/lib/browser';
-import { QuickSearchInWorkspace, SearchInWorkspaceContributions } from './quick-search-in-workspace';
 import { CommandContribution, MenuContribution, ResourceResolver } from "@theia/core";
 import { SearchInWorkspaceWidget } from "./search-in-workspace-widget";
 import { SearchInWorkspaceResultTreeWidget } from "./search-in-workspace-result-tree-widget";
@@ -30,11 +29,6 @@ export default new ContainerModule(bind => {
     for (const identifier of [CommandContribution, MenuContribution, KeybindingContribution]) {
         bind(identifier).toService(SearchInWorkspaceFrontendContribution);
     }
-
-    bind(QuickSearchInWorkspace).toSelf().inSingletonScope();
-
-    bind(CommandContribution).to(SearchInWorkspaceContributions).inSingletonScope();
-    bind(MenuContribution).to(SearchInWorkspaceContributions).inSingletonScope();
 
     // The object that gets notified of search results.
     bind(SearchInWorkspaceClientImpl).toSelf().inSingletonScope();
